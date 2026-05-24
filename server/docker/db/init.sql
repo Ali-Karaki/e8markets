@@ -1,0 +1,1 @@
+-- Database initialization (extensions, seed data, etc.)

@@ -1,0 +1,30 @@
+name: e8markets
+
+services:
+  postgres-db:
+    container_name: e8m-postgres-db
+    build: ./db/.
+    env_file:
+      - ./db/.env.local
+    restart: "no"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    volumes:
+      - ./local-volumes/db-data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:5.4.2
+    container_name: e8m-adminer
+    restart: "always"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - 9901:8080

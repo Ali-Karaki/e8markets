@@ -1,0 +1,4 @@
+docker/local-volumes/
+cmd/main/tmp/
+*.env*
+!*.example*
