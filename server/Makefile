@@ -8,4 +8,4 @@ run-infra:
 	cd docker && docker compose up
 
 reset-infra:
-	cd docker && docker compose down && rm -rf local-volumes && mkdir -p local-volumes/db-data
+	cd docker && docker compose down && rm -rf local-volumes && mkdir -p local-volumes/db-data local-volumes/redis-data

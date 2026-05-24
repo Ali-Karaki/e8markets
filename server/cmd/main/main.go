@@ -2,35 +2,64 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/Ali-Karaki/e8markets/server/internal/config"
+	"github.com/Ali-Karaki/e8markets/server/internal/handlers"
+	"github.com/Ali-Karaki/e8markets/server/internal/middleware"
+	"github.com/Ali-Karaki/e8markets/server/internal/server"
+	"github.com/Ali-Karaki/e8markets/server/internal/store"
+	"github.com/Ali-Karaki/e8markets/server/internal/tradelocker"
 )
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("config: %v", err)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	ctx := context.Background()
+
+	pg, err := store.NewPostgres(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("postgres: %v", err)
+	}
+	defer pg.Close()
+
+	redisClient, err := store.NewRedis(ctx, cfg.RedisURL)
+	if err != nil {
+		log.Fatalf("redis: %v", err)
+	}
+	defer redisClient.Close()
+
+	sessions := store.NewSessionStore(redisClient)
+	apiLogs := store.NewAPILogStore(pg)
+
+	tl := tradelocker.NewClient(cfg.TradeLockerBaseURL, apiLogs)
+	authMW := middleware.NewAuth(cfg, sessions, tl)
+
+	authHandler := handlers.NewAuthHandler(cfg, sessions, tl, apiLogs, authMW)
+	accountsHandler := handlers.NewAccountsHandler(tl)
+
+	handler := server.NewHandler(server.Deps{
+		Cfg:      cfg,
+		Auth:     authHandler,
+		Accounts: accountsHandler,
+		AuthMW:   authMW,
 	})
 
 	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: mux,
+		Addr:    ":" + cfg.Port,
+		Handler: handler,
 	}
 
 	go func() {
-		log.Printf("server listening on http://localhost:%s", port)
+		log.Printf("server listening on http://localhost:%s", cfg.Port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server error: %v", err)
 		}
@@ -42,10 +71,10 @@ func main() {
 
 	log.Println("shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("server shutdown error: %v", err)
 	}
 
