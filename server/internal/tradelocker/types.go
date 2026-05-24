@@ -44,7 +44,7 @@ type AccountsResponse struct {
 }
 
 // TLResponse is the { "d": ..., "s": "ok" } envelope used by /trade/* endpoints.
-type TLResponse[T any] struct {
+type TLResponse[T interface{}] struct {
 	D T      `json:"d"`
 	S string `json:"s"`
 }

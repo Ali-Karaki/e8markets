@@ -12,6 +12,16 @@ type AccountsHandler struct {
 	tl *tradelocker.Client
 }
 
+type accountsListResponse struct {
+	Accounts []tradelocker.Account `json:"accounts"`
+}
+
+type accountStateResponse struct {
+	AccountID string             `json:"accountId"`
+	AccNum    string             `json:"accNum"`
+	State     map[string]float64 `json:"state"`
+}
+
 func NewAccountsHandler(tl *tradelocker.Client) *AccountsHandler {
 	return &AccountsHandler{tl: tl}
 }
@@ -36,7 +46,7 @@ func (h *AccountsHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httpx.JSON(w, http.StatusOK, map[string]any{"accounts": accounts})
+	httpx.JSON(w, http.StatusOK, accountsListResponse{Accounts: accounts})
 }
 
 func (h *AccountsHandler) State(w http.ResponseWriter, r *http.Request) {
@@ -60,9 +70,9 @@ func (h *AccountsHandler) State(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, map[string]any{
-		"accountId": accountID,
-		"accNum":    accNum,
-		"state":     state,
+	httpx.JSON(w, http.StatusOK, accountStateResponse{
+		AccountID: accountID,
+		AccNum:    accNum,
+		State:     state,
 	})
 }

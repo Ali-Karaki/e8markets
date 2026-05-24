@@ -57,7 +57,7 @@ func (c *Client) logRequest(ctx context.Context, sessionID *string, method, path
 	c.logger.Log(ctx, parseSessionID(sessionID), eventTradeLockerRequest, method, path, statusCode, message)
 }
 
-func (c *Client) doJSON(ctx context.Context, sessionID *string, method, path, accNum string, body any, bearerToken string, out any) (int, error) {
+func (c *Client) doJSON(ctx context.Context, sessionID *string, method, path, accNum string, body interface{}, bearerToken string, out interface{}) (int, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)
