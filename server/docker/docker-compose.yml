@@ -1,4 +1,8 @@
-name: e8markets
+name: e8m-dev-test
+
+networks:
+  e8m-dev-test:
+    name: e8m-dev-test
 
 services:
   postgres-db:
@@ -18,6 +22,8 @@ services:
       - 5432
     volumes:
       - ./local-volumes/db-data:/var/lib/postgresql/data
+    networks:
+      - e8m-dev-test
 
   redis:
     image: redis:8.2.2-alpine
@@ -27,6 +33,8 @@ services:
     volumes:
       - ./local-volumes/redis-data:/data
     restart: "no"
+    networks:
+      - e8m-dev-test
 
   adminer:
     image: adminer:5.4.2
@@ -37,3 +45,5 @@ services:
         condition: service_healthy
     ports:
       - 9901:8080
+    networks:
+      - e8m-dev-test

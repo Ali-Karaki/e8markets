@@ -1,0 +1,5 @@
+cmd/main/tmp/
+docker/
+.env.local
+*.env*
+!*.example*
