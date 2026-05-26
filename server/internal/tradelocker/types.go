@@ -1,6 +1,46 @@
 package tradelocker
 
-import "time"
+import (
+	"encoding/json"
+	"strconv"
+	"time"
+)
+
+// flexFloat64 unmarshals JSON numbers or numeric strings from TradeLocker.
+// OpenAPI declares several numeric fields as "number", but the live API often
+// returns them as strings (e.g. accountBalance "100000.00").
+type flexFloat64 float64
+
+func (f *flexFloat64) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 || string(data) == "null" {
+		return nil
+	}
+
+	var n float64
+	if err := json.Unmarshal(data, &n); err == nil {
+		*f = flexFloat64(n)
+		return nil
+	}
+
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	if s == "" {
+		return nil
+	}
+
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return err
+	}
+	*f = flexFloat64(v)
+	return nil
+}
+
+func (f flexFloat64) Float64() float64 {
+	return float64(f)
+}
 
 // API-mapped types below mirror TradeLocker Public API schemas.
 // Do not rename json tags or fields unless the upstream API changes.
@@ -27,15 +67,16 @@ type RefreshRequest struct {
 }
 
 // Account is an entry in GET /auth/jwt/all-accounts.
+// OpenAPI: https://public-api.tradelocker.com/reference/getallaccounts.md
 type Account struct {
-	ID              string  `json:"id"`
-	Name            string  `json:"name"`
-	Currency        string  `json:"currency"`
-	Status          string  `json:"status"`
-	AccNum          string  `json:"accNum"`
-	// @TODO:Ali check if we can drop AccountBalance
-	AccountBalance  float64 `json:"accountBalance,omitempty"`
-	AAccountBalance float64 `json:"aaccountBalance,omitempty"` // typo in TL OpenAPI: aaccountBalance
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Currency string `json:"currency"`
+	Status   string `json:"status"`
+	AccNum   string `json:"accNum"`
+	// accountBalance is returned by the live API; aaccountBalance is the OpenAPI typo field.
+	AccountBalance  flexFloat64 `json:"accountBalance,omitempty"`
+	AAccountBalance flexFloat64 `json:"aaccountBalance,omitempty"`
 }
 
 // AccountsResponse is the top-level shape of GET /auth/jwt/all-accounts.
@@ -44,7 +85,7 @@ type AccountsResponse struct {
 }
 
 // TLResponse is the { "d": ..., "s": "ok" } envelope used by /trade/* endpoints.
-type TLResponse[T interface{}] struct {
+type TLResponse[T any] struct {
 	D T      `json:"d"`
 	S string `json:"s"`
 }
@@ -55,17 +96,21 @@ type AccountsData struct {
 }
 
 // AccountStateData is the "d" payload for GET /trade/accounts/{accountId}/state.
+// OpenAPI: https://public-api.tradelocker.com/reference/getstate.md
 type AccountStateData struct {
-	AccountDetailsData []float64 `json:"accountDetailsData"`
+	AccountDetailsData []flexFloat64 `json:"accountDetailsData"`
 }
 
 // ConfigData is the "d" payload for GET /trade/config.
+// OpenAPI: https://public-api.tradelocker.com/reference/getconfigusingget.md
 type ConfigData struct {
 	AccountDetailsConfig *ColumnConfig `json:"accountDetailsConfig"`
 }
 
-// ColumnConfig and Column map accountDetailsData array indices to column id values.
+// ColumnConfig maps accountDetailsData array indices to column id values (PanelConfig in OpenAPI).
 type ColumnConfig struct {
+	ID      string   `json:"id,omitempty"`
+	Title   string   `json:"title,omitempty"`
 	Columns []Column `json:"columns"`
 }
 

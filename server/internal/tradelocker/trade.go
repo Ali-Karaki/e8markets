@@ -7,7 +7,7 @@ import (
 )
 
 func (c *Client) GetAccountState(ctx context.Context, sessionID *string, accessToken, accountID, accNum string) (map[string]float64, error) {
-	if err := c.loadConfig(ctx, sessionID, accessToken); err != nil {
+	if err := c.loadConfig(ctx, sessionID, accessToken, accNum); err != nil {
 		return nil, err
 	}
 
@@ -18,23 +18,26 @@ func (c *Client) GetAccountState(ctx context.Context, sessionID *string, accessT
 		return nil, err
 	}
 
+	return mapAccountDetails(c.columns, resp.D.AccountDetailsData), nil
+}
+
+func mapAccountDetails(columns []Column, data []flexFloat64) map[string]float64 {
 	result := make(map[string]float64)
-	for i, val := range resp.D.AccountDetailsData {
-		if i < len(c.columns) {
-			key := c.columns[i].ID
+	for i, val := range data {
+		if i < len(columns) {
+			key := columns[i].ID
 			if key != "" {
-				result[key] = val
+				result[key] = val.Float64()
 			}
 		}
 	}
-
-	return result, nil
+	return result
 }
 
-func (c *Client) loadConfig(ctx context.Context, sessionID *string, accessToken string) error {
+func (c *Client) loadConfig(ctx context.Context, sessionID *string, accessToken, accNum string) error {
 	c.configOnce.Do(func() {
 		var resp TLResponse[ConfigData]
-		_, err := c.doJSON(ctx, sessionID, http.MethodGet, pathTradeConfig, "", nil, accessToken, &resp)
+		_, err := c.doJSON(ctx, sessionID, http.MethodGet, pathTradeConfig, accNum, nil, accessToken, &resp)
 		if err != nil {
 			c.configErr = err
 			return

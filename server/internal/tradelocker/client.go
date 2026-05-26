@@ -99,18 +99,22 @@ func (c *Client) doJSON(ctx context.Context, sessionID *string, method, path, ac
 		if len(msg) > 500 {
 			msg = msg[:500]
 		}
-	}
-	c.logRequest(ctx, sessionID, method, path, resp.StatusCode, msg)
-
-	if resp.StatusCode >= 400 {
+		c.logRequest(ctx, sessionID, method, path, resp.StatusCode, msg)
 		return resp.StatusCode, fmt.Errorf("tradelocker error %d: %s", resp.StatusCode, string(respBody))
 	}
 
 	if out != nil && len(respBody) > 0 {
 		if err := json.Unmarshal(respBody, out); err != nil {
+			decodeMsg := "decode: " + err.Error()
+			if len(decodeMsg) > 500 {
+				decodeMsg = decodeMsg[:500]
+			}
+			c.logRequest(ctx, sessionID, method, path, resp.StatusCode, decodeMsg)
 			return resp.StatusCode, fmt.Errorf("decode response: %w", err)
 		}
 	}
+
+	c.logRequest(ctx, sessionID, method, path, resp.StatusCode, msg)
 
 	return resp.StatusCode, nil
 }

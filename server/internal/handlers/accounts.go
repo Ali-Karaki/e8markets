@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/Ali-Karaki/e8markets/server/internal/httpx"
@@ -36,12 +37,13 @@ func (h *AccountsHandler) List(w http.ResponseWriter, r *http.Request) {
 	sid := session.ID.String()
 	accounts, err := h.tl.GetAllAccounts(r.Context(), &sid, session.AccessToken)
 	if err != nil {
+		log.Printf("GetAllAccounts failed session=%s err=%v", sid, err)
 		httpx.Error(w, http.StatusBadGateway, "Failed to fetch accounts")
 		return
 	}
 
 	for i := range accounts {
-		if accounts[i].AccountBalance == 0 && accounts[i].AAccountBalance != 0 {
+		if accounts[i].AccountBalance.Float64() == 0 && accounts[i].AAccountBalance.Float64() != 0 {
 			accounts[i].AccountBalance = accounts[i].AAccountBalance
 		}
 	}
@@ -66,6 +68,7 @@ func (h *AccountsHandler) State(w http.ResponseWriter, r *http.Request) {
 	sid := session.ID.String()
 	state, err := h.tl.GetAccountState(r.Context(), &sid, session.AccessToken, accountID, accNum)
 	if err != nil {
+		log.Printf("GetAccountState failed session=%s accountId=%s accNum=%s err=%v", sid, accountID, accNum, err)
 		httpx.Error(w, http.StatusBadGateway, "Failed to fetch account state")
 		return
 	}
