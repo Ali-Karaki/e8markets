@@ -20,7 +20,9 @@ copy_env_files() {
 }
 
 stop() {
-	docker rm -f e8m-client e8m-server e8m-postgres-db e8m-redis e8m-adminer 2>/dev/null || true
+	trap - EXIT INT TERM
+	docker rm -f e8m-client e8m-server 2>/dev/null || true
+	(cd server/docker && docker compose stop -t 5) 2>/dev/null || true
 	(cd server/docker && docker compose down) 2>/dev/null || true
 }
 

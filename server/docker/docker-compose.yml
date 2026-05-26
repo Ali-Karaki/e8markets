@@ -28,6 +28,7 @@ services:
   redis:
     image: redis:8.2.2-alpine
     container_name: e8m-redis
+    command: redis-server --appendonly yes
     ports:
       - "6379:6379"
     volumes:
