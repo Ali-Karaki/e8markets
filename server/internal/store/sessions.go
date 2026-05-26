@@ -29,9 +29,9 @@ func NewSessionStore(client *redis.Client) *SessionStore {
 	return &SessionStore{client: client}
 }
 
-func (s *SessionStore) Create(ctx context.Context, session Session) error {
+func (s *SessionStore) Create(ctx context.Context, session Session) (Session, error) {
 	session.ID = uuid.New()
-	return s.save(ctx, session)
+	return session, s.save(ctx, session)
 }
 
 func (s *SessionStore) Get(ctx context.Context, id uuid.UUID) (Session, error) {
