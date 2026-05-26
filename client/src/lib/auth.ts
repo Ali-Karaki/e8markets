@@ -17,7 +17,6 @@ export function sessionQueryOptions() {
   return {
     queryKey: sessionQueryKey,
     queryFn: (): Promise<Session> => api.session(),
-    retry: false as const,
   };
 }
 

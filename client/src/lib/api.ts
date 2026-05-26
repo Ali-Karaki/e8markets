@@ -51,6 +51,16 @@ type ApiErrorBody = {
   error: string;
 };
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 export type Api = {
   login(body: LoginRequest): Promise<Session>;
   session(): Promise<Session>;
@@ -88,7 +98,7 @@ async function request<T>(path: ApiRequestPath, init?: RequestInit): Promise<T> 
     }
 
     const message = isApiErrorBody(data) ? data.error : "Request failed";
-    throw new Error(message);
+    throw new ApiError(res.status, message);
   }
 
   return data as T;
