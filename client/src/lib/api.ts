@@ -6,6 +6,7 @@ const apiPaths = {
   logout: "/api/auth/logout",
   accounts: "/api/accounts",
   accountState: "/api/accounts/state",
+  instruments: "/api/instruments",
 } as const;
 
 type ApiPath = (typeof apiPaths)[keyof typeof apiPaths];
@@ -47,6 +48,22 @@ export type AccountState = {
   state: Record<string, number>;
 };
 
+export type Instrument = {
+  id: number;
+  tradableInstrumentId: number;
+  name: string;
+  description?: string;
+  type: string;
+  tradingExchange: string;
+  marketDataExchange: string;
+  tradeRouteId?: number;
+  infoRouteId?: number;
+};
+
+export type InstrumentsResponse = {
+  instruments: Instrument[];
+};
+
 type ApiErrorBody = {
   error: string;
 };
@@ -67,6 +84,7 @@ export type Api = {
   logout(): Promise<LogoutResponse>;
   accounts(): Promise<AccountsResponse>;
   accountState(accountId: string, accNum: string): Promise<AccountState>;
+  instruments(accountId: string, accNum: string): Promise<InstrumentsResponse>;
 };
 
 function isApiErrorBody(data: unknown): data is ApiErrorBody {
@@ -127,5 +145,10 @@ export const api: Api = {
   accountState(accountId, accNum) {
     const params = new URLSearchParams({ accountId, accNum });
     return request<AccountState>(`${apiPaths.accountState}?${params}`);
+  },
+
+  instruments(accountId, accNum) {
+    const params = new URLSearchParams({ accountId, accNum });
+    return request<InstrumentsResponse>(`${apiPaths.instruments}?${params}`);
   },
 };
