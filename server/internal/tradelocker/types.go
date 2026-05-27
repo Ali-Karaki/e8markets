@@ -119,6 +119,43 @@ type Column struct {
 	Description string `json:"description"`
 }
 
+// Route is an instrument routing entry from GET /trade/accounts/{accountId}/instruments.
+// OpenAPI: https://public-api.tradelocker.com/reference/getinstruments.md
+type Route struct {
+	ID   int64  `json:"id"`
+	Type string `json:"type"`
+}
+
+// Instrument is an entry in GET /trade/accounts/{accountId}/instruments.
+type Instrument struct {
+	ID                   int64   `json:"id"`
+	Name                 string  `json:"name"`
+	Description          string  `json:"description,omitempty"`
+	Type                 string  `json:"type"`
+	TradableInstrumentID int64   `json:"tradableInstrumentId"`
+	TradingExchange      string  `json:"tradingExchange"`
+	MarketDataExchange   string  `json:"marketDataExchange"`
+	Routes               []Route `json:"routes,omitempty"`
+}
+
+// InstrumentsData is the "d" payload for GET /trade/accounts/{accountId}/instruments.
+type InstrumentsData struct {
+	Instruments []Instrument `json:"instruments"`
+}
+
+// InstrumentSummary is a frontend-friendly instrument shape returned by our API.
+type InstrumentSummary struct {
+	ID                   int64  `json:"id"`
+	TradableInstrumentID int64  `json:"tradableInstrumentId"`
+	Name                 string `json:"name"`
+	Description          string `json:"description,omitempty"`
+	Type                 string `json:"type"`
+	TradingExchange      string `json:"tradingExchange"`
+	MarketDataExchange   string `json:"marketDataExchange"`
+	TradeRouteID         int64  `json:"tradeRouteId,omitempty"`
+	InfoRouteID          int64  `json:"infoRouteId,omitempty"`
+}
+
 // Tokens is an internal app type (parsed ExpireDate); not a raw TL response shape.
 type Tokens struct {
 	AccessToken  string

@@ -9,10 +9,11 @@ import (
 )
 
 type Deps struct {
-	Cfg      config.Config
-	Auth     *handlers.AuthHandler
-	Accounts *handlers.AccountsHandler
-	AuthMW   *middleware.Auth
+	Cfg          config.Config
+	Auth         *handlers.AuthHandler
+	Accounts     *handlers.AccountsHandler
+	Instruments  *handlers.InstrumentsHandler
+	AuthMW       *middleware.Auth
 }
 
 func NewHandler(deps Deps) http.Handler {
@@ -29,6 +30,7 @@ func NewHandler(deps Deps) http.Handler {
 
 	mux.Handle("GET /api/accounts", protected(deps.Accounts.List))
 	mux.Handle("GET /api/accounts/state", protected(deps.Accounts.State))
+	mux.Handle("GET /api/instruments", protected(deps.Instruments.List))
 
 	return middleware.CORS(deps.Cfg, middleware.RequestLogger(mux))
 }

@@ -45,12 +45,14 @@ func main() {
 
 	authHandler := handlers.NewAuthHandler(cfg, sessions, tl, apiLogs, authMW)
 	accountsHandler := handlers.NewAccountsHandler(tl)
+	instrumentsHandler := handlers.NewInstrumentsHandler(tl)
 
 	handler := server.NewHandler(server.Deps{
-		Cfg:      cfg,
-		Auth:     authHandler,
-		Accounts: accountsHandler,
-		AuthMW:   authMW,
+		Cfg:         cfg,
+		Auth:        authHandler,
+		Accounts:    accountsHandler,
+		Instruments: instrumentsHandler,
+		AuthMW:      authMW,
 	})
 
 	server := &http.Server{

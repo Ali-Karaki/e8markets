@@ -101,3 +101,54 @@ func TestFlexFloat64_rejectsNonNumericString(t *testing.T) {
 		t.Fatal("expected error")
 	}
 }
+
+func TestInstrumentsData_openAPI(t *testing.T) {
+	const raw = `{"d":{"instruments":[{"id":1,"name":"EURUSD","tradableInstrumentId":1001,"type":"FOREX","tradingExchange":"FX","marketDataExchange":"FX","description":"Euro vs US Dollar","routes":[{"id":42,"type":"TRADE"},{"id":43,"type":"INFO"}]}]},"s":"ok"}`
+
+	var resp TLResponse[InstrumentsData]
+	if err := json.Unmarshal([]byte(raw), &resp); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if len(resp.D.Instruments) != 1 {
+		t.Fatalf("len = %d", len(resp.D.Instruments))
+	}
+	inst := resp.D.Instruments[0]
+	if inst.Name != "EURUSD" || inst.TradableInstrumentID != 1001 {
+		t.Fatalf("instrument = %+v", inst)
+	}
+}
+
+func TestExtractRouteIDs(t *testing.T) {
+	routes := []Route{
+		{ID: 10, Type: "INFO"},
+		{ID: 20, Type: "TRADE"},
+	}
+	trade, info := extractRouteIDs(routes)
+	if trade != 20 || info != 10 {
+		t.Fatalf("trade=%d info=%d", trade, info)
+	}
+}
+
+func TestMapInstruments(t *testing.T) {
+	instruments := []Instrument{
+		{
+			ID:                   1,
+			Name:                 "BTCUSD",
+			TradableInstrumentID: 2001,
+			Type:                 "CRYPTO",
+			TradingExchange:      "CRYPTO",
+			MarketDataExchange:   "CRYPTO",
+			Description:          "Bitcoin vs USD",
+			Routes:               []Route{{ID: 5, Type: "TRADE"}, {ID: 6, Type: "INFO"}},
+		},
+	}
+
+	summaries := mapInstruments(instruments)
+	if len(summaries) != 1 {
+		t.Fatalf("len = %d", len(summaries))
+	}
+	s := summaries[0]
+	if s.Name != "BTCUSD" || s.TradeRouteID != 5 || s.InfoRouteID != 6 {
+		t.Fatalf("summary = %+v", s)
+	}
+}
