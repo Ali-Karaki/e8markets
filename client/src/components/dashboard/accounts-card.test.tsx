@@ -15,7 +15,9 @@ describe("AccountsCard", () => {
       />,
     );
 
-    expect(screen.getByText("No trading accounts were returned for this login.")).toBeTruthy();
+    expect(
+      screen.getByText("No trading accounts were returned for this login."),
+    ).toBeTruthy();
     expect(screen.getByText("No accounts available")).toBeTruthy();
   });
 });

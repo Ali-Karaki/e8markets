@@ -1,6 +1,12 @@
 import { DefinitionList } from "@/components/shared/definition-list";
 import { QueryFeedback } from "@/components/shared/query-feedback";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -41,7 +47,10 @@ export function AccountsCard({
         { label: "Currency", value: selectedAccount.currency },
         {
           label: "Balance",
-          value: formatCurrency(selectedAccount.accountBalance, selectedAccount.currency),
+          value: formatCurrency(
+            selectedAccount.accountBalance,
+            selectedAccount.currency,
+          ),
         },
       ]
     : [];
@@ -77,7 +86,8 @@ export function AccountsCard({
               <SelectContent>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
-                    {account.name} — #{account.accNum} ({account.id}) — {account.currency}
+                    {account.name} — #{account.accNum} ({account.id}) —{" "}
+                    {account.currency}
                   </SelectItem>
                 ))}
               </SelectContent>

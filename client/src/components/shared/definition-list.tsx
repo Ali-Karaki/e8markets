@@ -13,7 +13,11 @@ type DefinitionListProps = {
   className?: string;
 };
 
-export function DefinitionList({ items, columns = 2, className }: DefinitionListProps) {
+export function DefinitionList({
+  items,
+  columns = 2,
+  className,
+}: DefinitionListProps) {
   if (items.length === 0) return null;
 
   return (

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "./api";
-import { apiErrorMessage, ApiErrorCode, isSessionExpiredCode } from "./errors";
+import { ApiErrorCode, apiErrorMessage, isSessionExpiredCode } from "./errors";
 
 describe("apiErrorMessage", () => {
   it("maps known error codes", () => {
@@ -15,7 +15,10 @@ describe("apiErrorMessage", () => {
 
   it("uses ApiError message when code is not mapped", () => {
     expect(
-      apiErrorMessage(new ApiError(400, "Bad input", ApiErrorCode.ValidationError), "fallback"),
+      apiErrorMessage(
+        new ApiError(400, "Bad input", ApiErrorCode.ValidationError),
+        "fallback",
+      ),
     ).toBe("Bad input");
   });
 

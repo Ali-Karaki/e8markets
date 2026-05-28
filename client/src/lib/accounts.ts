@@ -1,6 +1,6 @@
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 
-import { api, type AccountState, type AccountsResponse } from "./api";
+import { type AccountState, type AccountsResponse, api } from "./api";
 
 export const accountsQueryKey = ["accounts"] as const;
 

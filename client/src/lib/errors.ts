@@ -14,13 +14,17 @@ export const ApiErrorCode = {
 } as const;
 
 const codeMessages: Record<string, string> = {
-  [ApiErrorCode.UpstreamUnavailable]: "TradeLocker is temporarily unavailable. Try again later.",
+  [ApiErrorCode.UpstreamUnavailable]:
+    "TradeLocker is temporarily unavailable. Try again later.",
   [ApiErrorCode.UpstreamRateLimited]: "Too many requests. Try again shortly.",
-  [ApiErrorCode.UpstreamError]: "Could not complete the request with TradeLocker.",
-  [ApiErrorCode.UpstreamMalformed]: "Received an unexpected response from TradeLocker.",
+  [ApiErrorCode.UpstreamError]:
+    "Could not complete the request with TradeLocker.",
+  [ApiErrorCode.UpstreamMalformed]:
+    "Received an unexpected response from TradeLocker.",
   [ApiErrorCode.SessionExpired]: "Your session expired. Please sign in again.",
   [ApiErrorCode.NotAuthenticated]: "Please sign in to continue.",
-  [ApiErrorCode.InvalidSession]: "Your session is invalid. Please sign in again.",
+  [ApiErrorCode.InvalidSession]:
+    "Your session is invalid. Please sign in again.",
   [ApiErrorCode.InternalError]: "Something went wrong. Please try again.",
 };
 

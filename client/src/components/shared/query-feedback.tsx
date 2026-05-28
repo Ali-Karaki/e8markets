@@ -25,7 +25,9 @@ export function QueryFeedback({
 
   if (error) {
     return (
-      <p className="text-sm text-destructive">{apiErrorMessage(error, errorMessage)}</p>
+      <p className="text-sm text-destructive">
+        {apiErrorMessage(error, errorMessage)}
+      </p>
     );
   }
 

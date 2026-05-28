@@ -31,7 +31,9 @@ function DashboardPage() {
 
   const accountList = accounts.data?.accounts ?? [];
   const [selectedId, setSelectedId] = useState<string>("");
-  const [selectedInstrumentId, setSelectedInstrumentId] = useState<number | null>(null);
+  const [selectedInstrumentId, setSelectedInstrumentId] = useState<
+    number | null
+  >(null);
   const [lastSyncMessage, setLastSyncMessage] = useState<string | undefined>();
 
   const selectedAccount = useMemo(
@@ -45,17 +47,26 @@ function DashboardPage() {
     }
   }, [accountList, selectedId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset symbol when account changes
   useEffect(() => {
     setSelectedInstrumentId(null);
   }, [selectedAccount?.id]);
 
-  const accountState = useAccountState(selectedAccount?.id, selectedAccount?.accNum);
-  const instruments = useInstruments(selectedAccount?.id, selectedAccount?.accNum);
+  const accountState = useAccountState(
+    selectedAccount?.id,
+    selectedAccount?.accNum,
+  );
+  const instruments = useInstruments(
+    selectedAccount?.id,
+    selectedAccount?.accNum,
+  );
   const instrumentList = instruments.data?.instruments ?? [];
 
   const selectedInstrument = useMemo(() => {
     if (selectedInstrumentId !== null) {
-      const found = instrumentList.find((i) => i.tradableInstrumentId === selectedInstrumentId);
+      const found = instrumentList.find(
+        (i) => i.tradableInstrumentId === selectedInstrumentId,
+      );
       if (found) return found;
     }
     return findPreferredInstrument(instrumentList);
@@ -69,7 +80,11 @@ function DashboardPage() {
     [allPositions, instrumentFilter],
   );
   const positionsEmptyMessage = useMemo(() => {
-    if (allPositions.length > 0 && filteredPositions.length === 0 && selectedInstrument?.name) {
+    if (
+      allPositions.length > 0 &&
+      filteredPositions.length === 0 &&
+      selectedInstrument?.name
+    ) {
       return `No open positions for ${selectedInstrument.name}.`;
     }
     return "No open positions for this account.";
@@ -99,6 +114,7 @@ function DashboardPage() {
     }
   }, [instrumentList, selectedInstrumentId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: clear message when account or symbol changes
   useEffect(() => {
     setLastSyncMessage(undefined);
   }, [selectedAccount?.id, instrumentFilter]);

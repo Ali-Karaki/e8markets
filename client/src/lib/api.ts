@@ -158,7 +158,10 @@ function isApiErrorBody(data: unknown): data is ApiErrorBody {
   );
 }
 
-async function request<T>(path: ApiRequestPath, init?: RequestInit): Promise<T> {
+async function request<T>(
+  path: ApiRequestPath,
+  init?: RequestInit,
+): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: "include",
@@ -228,9 +231,12 @@ export const api: Api = {
     const params = new URLSearchParams({ accountId, accNum });
     if (options?.force) params.set("force", "true");
     if (options?.onlyIfNew) params.set("onlyIfNew", "true");
-    return request<SyncPositionsResponse>(`${apiPaths.positionsSync}?${params}`, {
-      method: "POST",
-    });
+    return request<SyncPositionsResponse>(
+      `${apiPaths.positionsSync}?${params}`,
+      {
+        method: "POST",
+      },
+    );
   },
 
   positionHistory(accountId, accNum, tradableInstrumentId) {
@@ -238,6 +244,8 @@ export const api: Api = {
     if (tradableInstrumentId !== undefined) {
       params.set("tradableInstrumentId", String(tradableInstrumentId));
     }
-    return request<PositionHistoryResponse>(`${apiPaths.positionsHistory}?${params}`);
+    return request<PositionHistoryResponse>(
+      `${apiPaths.positionsHistory}?${params}`,
+    );
   },
 };

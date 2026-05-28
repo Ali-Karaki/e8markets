@@ -6,7 +6,10 @@ export function formatFieldLabel(key: string) {
     .trim();
 }
 
-export function formatCurrency(amount: number | undefined, currency: string = "USD") {
+export function formatCurrency(
+  amount: number | undefined,
+  currency: string = "USD",
+) {
   if (!amount) return "—";
 
   return amount.toLocaleString(undefined, {

@@ -1,10 +1,10 @@
 import {
-  useMutation,
-  useQuery,
-  useQueryClient,
   type QueryClient,
   type UseMutationResult,
   type UseQueryResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
@@ -30,7 +30,9 @@ export function filterPositionsByInstrument(
   if (tradableInstrumentId === undefined) {
     return positions;
   }
-  return positions.filter((p) => p.tradableInstrumentId === tradableInstrumentId);
+  return positions.filter(
+    (p) => p.tradableInstrumentId === tradableInstrumentId,
+  );
 }
 
 export function positionHistoryQueryKey(
@@ -38,7 +40,13 @@ export function positionHistoryQueryKey(
   accNum: string,
   tradableInstrumentId?: number,
 ) {
-  return ["positions", "history", accountId, accNum, tradableInstrumentId ?? "all"] as const;
+  return [
+    "positions",
+    "history",
+    accountId,
+    accNum,
+    tradableInstrumentId ?? "all",
+  ] as const;
 }
 
 export function usePositions(
@@ -110,7 +118,10 @@ export function useSyncPositions(
   });
 }
 
-export function formatSyncMessage(data: SyncPositionsResponse, manual: boolean): string {
+export function formatSyncMessage(
+  data: SyncPositionsResponse,
+  manual: boolean,
+): string {
   if (data.skipped) {
     return "Auto-sync skipped (no new open positions).";
   }

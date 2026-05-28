@@ -1,7 +1,13 @@
 import { DefinitionList } from "@/components/shared/definition-list";
 import { QueryFeedback } from "@/components/shared/query-feedback";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import type { Position } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/errors";
 import { formatNumber } from "@/lib/format";
@@ -26,7 +32,9 @@ function positionItems(position: Position, instrumentName?: string) {
       ? [{ label: "Instrument ID", value: position.tradableInstrumentId }]
       : []),
     ...(position.side ? [{ label: "Side", value: position.side }] : []),
-    ...(position.qty !== undefined ? [{ label: "Qty", value: formatNumber(position.qty) }] : []),
+    ...(position.qty !== undefined
+      ? [{ label: "Qty", value: formatNumber(position.qty) }]
+      : []),
     ...(position.avgPrice !== undefined
       ? [{ label: "Avg price", value: formatNumber(position.avgPrice) }]
       : []),
@@ -50,9 +58,9 @@ export function PositionsCard({
         <div className="space-y-1.5">
           <CardTitle>Current positions</CardTitle>
           <CardDescription>
-            Live open positions from TradeLocker. Sync saves a snapshot to the database (shown
-            below)—it does not close trades. Auto-sync runs every 3 minutes when a new open position
-            appears (tab visible).
+            Live open positions from TradeLocker. Sync saves a snapshot to the
+            database (shown below)—it does not close trades. Auto-sync runs
+            every 3 minutes when a new open position appears (tab visible).
           </CardDescription>
         </div>
         <Button type="button" size="sm" onClick={onSync} disabled={isSyncing}>
@@ -81,7 +89,10 @@ export function PositionsCard({
           <ul className="space-y-4">
             {positions.map((position) => (
               <li key={position.id} className="rounded-md border p-3">
-                <DefinitionList items={positionItems(position, instrumentName)} columns={2} />
+                <DefinitionList
+                  items={positionItems(position, instrumentName)}
+                  columns={2}
+                />
               </li>
             ))}
           </ul>

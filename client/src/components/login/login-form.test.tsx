@@ -36,7 +36,7 @@ describe("LoginForm", () => {
     fireEvent.change(screen.getByLabelText("Password"), {
       target: { value: "secret" },
     });
-    fireEvent.submit(screen.getByRole("button", { name: "Sign in" }).closest("form")!);
+    fireEvent.submit(screen.getByRole("form", { name: "Sign in" }));
 
     await waitFor(() => {
       expect(mutateAsync).toHaveBeenCalledWith({
@@ -61,7 +61,7 @@ describe("LoginForm", () => {
     fireEvent.change(screen.getByLabelText("Password"), {
       target: { value: "wrong" },
     });
-    fireEvent.submit(screen.getByRole("button", { name: "Sign in" }).closest("form")!);
+    fireEvent.submit(screen.getByRole("form", { name: "Sign in" }));
 
     expect(await screen.findByText("Invalid credentials")).toBeTruthy();
     expect(navigate).not.toHaveBeenCalled();
@@ -70,6 +70,8 @@ describe("LoginForm", () => {
   it("shows session expired banner", () => {
     render(<LoginForm sessionExpired />);
 
-    expect(screen.getByText("Your session expired. Please sign in again.")).toBeTruthy();
+    expect(
+      screen.getByText("Your session expired. Please sign in again."),
+    ).toBeTruthy();
   });
 });

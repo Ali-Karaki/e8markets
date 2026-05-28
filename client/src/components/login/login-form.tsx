@@ -1,11 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { FormField } from "@/components/shared/form-field";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Login_FormSchema, type Login_FormType } from "@/form-schemas/login";
 import { useLogin } from "@/lib/auth";
@@ -19,6 +25,9 @@ export function LoginForm({ sessionExpired = false }: LoginFormProps) {
   const navigate = useNavigate();
   const login = useLogin();
   const [error, setError] = useState<string | null>(null);
+  const emailId = useId();
+  const passwordId = useId();
+  const serverId = useId();
 
   const form = useForm<Login_FormType>({
     resolver: zodResolver(Login_FormSchema),
@@ -46,14 +55,25 @@ export function LoginForm({ sessionExpired = false }: LoginFormProps) {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>Sign in</CardTitle>
-        <CardDescription>Log in with your TradeLocker credentials</CardDescription>
+        <CardDescription>
+          Log in with your TradeLocker credentials
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
-        <form className="space-y-4" noValidate onSubmit={form.handleSubmit(onSubmit)}>
-          <FormField label="Email" htmlFor="email" error={form.formState.errors.email?.message}>
+        <form
+          className="space-y-4"
+          noValidate
+          aria-label="Sign in"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
+          <FormField
+            label="Email"
+            htmlFor={emailId}
+            error={form.formState.errors.email?.message}
+          >
             <Input
-              id="email"
+              id={emailId}
               type="email"
               autoComplete="email"
               aria-invalid={Boolean(form.formState.errors.email)}
@@ -61,9 +81,13 @@ export function LoginForm({ sessionExpired = false }: LoginFormProps) {
             />
           </FormField>
 
-          <FormField label="Password" htmlFor="password" error={form.formState.errors.password?.message}>
+          <FormField
+            label="Password"
+            htmlFor={passwordId}
+            error={form.formState.errors.password?.message}
+          >
             <Input
-              id="password"
+              id={passwordId}
               type="password"
               autoComplete="current-password"
               aria-invalid={Boolean(form.formState.errors.password)}
@@ -71,9 +95,13 @@ export function LoginForm({ sessionExpired = false }: LoginFormProps) {
             />
           </FormField>
 
-          <FormField label="Server" htmlFor="server" error={form.formState.errors.server?.message}>
+          <FormField
+            label="Server"
+            htmlFor={serverId}
+            error={form.formState.errors.server?.message}
+          >
             <Input
-              id="server"
+              id={serverId}
               aria-invalid={Boolean(form.formState.errors.server)}
               {...form.register("server")}
             />

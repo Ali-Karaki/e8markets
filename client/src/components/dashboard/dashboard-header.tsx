@@ -6,7 +6,11 @@ type DashboardHeaderProps = {
   isLoggingOut: boolean;
 };
 
-export function DashboardHeader({ email, onLogout, isLoggingOut }: DashboardHeaderProps) {
+export function DashboardHeader({
+  email,
+  onLogout,
+  isLoggingOut,
+}: DashboardHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>

@@ -1,9 +1,15 @@
-import { useMemo, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { DefinitionList } from "@/components/shared/definition-list";
 import { QueryFeedback } from "@/components/shared/query-feedback";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { Instrument } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -52,14 +58,28 @@ export function InstrumentsCard({
     ? [
         { label: "Symbol", value: selectedInstrument.name },
         { label: "Type", value: selectedInstrument.type },
-        { label: "Tradable ID", value: selectedInstrument.tradableInstrumentId },
-        { label: "Trading exchange", value: selectedInstrument.tradingExchange },
-        { label: "Market data exchange", value: selectedInstrument.marketDataExchange },
+        {
+          label: "Tradable ID",
+          value: selectedInstrument.tradableInstrumentId,
+        },
+        {
+          label: "Trading exchange",
+          value: selectedInstrument.tradingExchange,
+        },
+        {
+          label: "Market data exchange",
+          value: selectedInstrument.marketDataExchange,
+        },
         ...(selectedInstrument.description
           ? [{ label: "Description", value: selectedInstrument.description }]
           : []),
         ...(selectedInstrument.tradeRouteId
-          ? [{ label: "Trade route ID", value: selectedInstrument.tradeRouteId }]
+          ? [
+              {
+                label: "Trade route ID",
+                value: selectedInstrument.tradeRouteId,
+              },
+            ]
           : []),
         ...(selectedInstrument.infoRouteId
           ? [{ label: "Info route ID", value: selectedInstrument.infoRouteId }]
@@ -99,7 +119,10 @@ export function InstrumentsCard({
                 : "Select a symbol"}
             </span>
             <ChevronDownIcon
-              className={cn("size-4 shrink-0 text-muted-foreground transition-transform", isListOpen && "rotate-180")}
+              className={cn(
+                "size-4 shrink-0 text-muted-foreground transition-transform",
+                isListOpen && "rotate-180",
+              )}
             />
           </button>
 
@@ -122,20 +145,27 @@ export function InstrumentsCard({
                 ) : (
                   filtered.map((instrument) => {
                     const isSelected =
-                      selectedInstrument?.tradableInstrumentId === instrument.tradableInstrumentId;
+                      selectedInstrument?.tradableInstrumentId ===
+                      instrument.tradableInstrumentId;
 
                     return (
                       <li key={instrument.tradableInstrumentId}>
                         <button
                           type="button"
-                          onClick={() => handleSelectInstrument(instrument.tradableInstrumentId)}
+                          onClick={() =>
+                            handleSelectInstrument(
+                              instrument.tradableInstrumentId,
+                            )
+                          }
                           className={cn(
                             "w-full rounded-sm px-3 py-2 text-left text-sm transition-colors hover:bg-muted",
                             isSelected && "bg-muted font-medium",
                           )}
                         >
                           <span>{instrument.name}</span>
-                          <span className="ml-2 text-muted-foreground">{instrument.type}</span>
+                          <span className="ml-2 text-muted-foreground">
+                            {instrument.type}
+                          </span>
                         </button>
                       </li>
                     );
