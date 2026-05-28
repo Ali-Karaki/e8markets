@@ -138,6 +138,22 @@ func (s *PositionStore) RecordFailedSync(
 	return syncRunID, nil
 }
 
+func (s *PositionStore) RecordSkippedSync(
+	ctx context.Context,
+	sessionID uuid.UUID,
+	accountID, accNum string,
+) (syncRunID int64, err error) {
+	err = s.pg.pool.QueryRow(ctx, `
+		INSERT INTO sync_runs (session_id, account_id, acc_num, sync_type, status, records_stored)
+		VALUES ($1, $2, $3, $4, $5, 0)
+		RETURNING id
+	`, sessionID, accountID, accNum, SyncTypePositions, SyncStatusSkipped).Scan(&syncRunID)
+	if err != nil {
+		return 0, fmt.Errorf("insert skipped sync_run: %w", err)
+	}
+	return syncRunID, nil
+}
+
 func (s *PositionStore) ListSnapshots(
 	ctx context.Context,
 	accountID, accNum string,

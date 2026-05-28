@@ -101,7 +101,14 @@ func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !tradelocker.HasNewOpenPositions(positions, previous) {
+			syncRunID, err := h.store.RecordSkippedSync(r.Context(), session.ID, accountID, accNum)
+			if err != nil {
+				log.Printf("RecordSkippedSync failed accountId=%s accNum=%s err=%v", accountID, accNum, err)
+				writeInternalError(w, "Failed to record skipped sync")
+				return
+			}
 			httpx.JSON(w, http.StatusOK, syncPositionsResponse{
+				SyncRunID:     syncRunID,
 				Status:        store.SyncStatusSkipped,
 				RecordsStored: 0,
 				Skipped:       true,
