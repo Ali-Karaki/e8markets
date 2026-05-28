@@ -1,3 +1,5 @@
+import { apiErrorMessage } from "@/lib/errors";
+
 type QueryFeedbackProps = {
   isLoading?: boolean;
   error?: unknown;
@@ -22,7 +24,9 @@ export function QueryFeedback({
   }
 
   if (error) {
-    return <p className="text-sm text-destructive">{errorMessage}</p>;
+    return (
+      <p className="text-sm text-destructive">{apiErrorMessage(error, errorMessage)}</p>
+    );
   }
 
   if (isEmpty && emptyMessage) {

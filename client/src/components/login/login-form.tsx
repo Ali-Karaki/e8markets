@@ -9,8 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Login_FormSchema, type Login_FormType } from "@/form-schemas/login";
 import { useLogin } from "@/lib/auth";
+import { apiErrorMessage } from "@/lib/errors";
 
-export function LoginForm() {
+type LoginFormProps = {
+  sessionExpired?: boolean;
+};
+
+export function LoginForm({ sessionExpired = false }: LoginFormProps) {
   const navigate = useNavigate();
   const login = useLogin();
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +36,7 @@ export function LoginForm() {
       await login.mutateAsync(values);
       navigate({ to: "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(apiErrorMessage(err, "Login failed"));
     }
   }
 
@@ -73,6 +78,12 @@ export function LoginForm() {
               {...form.register("server")}
             />
           </FormField>
+
+          {sessionExpired ? (
+            <p className="text-sm text-muted-foreground">
+              Your session expired. Please sign in again.
+            </p>
+          ) : null}
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

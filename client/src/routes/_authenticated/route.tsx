@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_authenticated")({
     try {
       await fetchSession(context.queryClient);
     } catch {
-      throw redirect({ to: "/login" });
+      throw redirect({ to: "/login", search: { reason: "expired" } });
     }
   },
   component: AuthenticatedLayout,

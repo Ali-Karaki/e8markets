@@ -110,15 +110,18 @@ export type PositionHistoryResponse = {
 
 type ApiErrorBody = {
   error: string;
+  code?: string;
 };
 
 export class ApiError extends Error {
   status: number;
+  code?: string;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -168,14 +171,16 @@ async function request<T>(path: ApiRequestPath, init?: RequestInit): Promise<T> 
   const data: unknown = await res.json().catch(() => null);
 
   if (!res.ok) {
+    const message = isApiErrorBody(data) ? data.error : "Request failed";
+    const code = isApiErrorBody(data) ? data.code : undefined;
+
     if (res.status === 401 && path !== apiPaths.login) {
       if (window.location.pathname !== "/login") {
-        window.location.assign("/login");
+        window.location.assign("/login?reason=expired");
       }
     }
 
-    const message = isApiErrorBody(data) ? data.error : "Request failed";
-    throw new ApiError(res.status, message);
+    throw new ApiError(res.status, message, code);
   }
 
   return data as T;

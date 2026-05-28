@@ -3,6 +3,7 @@ import { QueryFeedback } from "@/components/shared/query-feedback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Position } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/errors";
 import { formatNumber } from "@/lib/format";
 
 type PositionsCardProps = {
@@ -61,7 +62,9 @@ export function PositionsCard({
 
       <CardContent className="space-y-4">
         {syncError ? (
-          <p className="text-sm text-destructive">Failed to sync positions</p>
+          <p className="text-sm text-destructive">
+            {apiErrorMessage(syncError, "Failed to sync positions")}
+          </p>
         ) : null}
         {lastSyncMessage ? (
           <p className="text-sm text-muted-foreground">{lastSyncMessage}</p>
