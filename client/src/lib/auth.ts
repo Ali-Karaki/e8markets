@@ -47,6 +47,8 @@ export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: sessionQueryKey });
       queryClient.removeQueries({ queryKey: ["accounts"] });
+      queryClient.removeQueries({ queryKey: ["positions"] });
+      queryClient.removeQueries({ queryKey: ["instruments"] });
     },
   });
 }

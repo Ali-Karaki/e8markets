@@ -1,6 +1,17 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 
-import { api, type InstrumentsResponse } from "./api";
+import { api, type Instrument, type InstrumentsResponse } from "./api";
+
+/** Substring match for default symbol selection (e.g. GBPCAD+). */
+export const PREFERRED_INSTRUMENT_SYMBOL = "GBPCAD";
+
+export function findPreferredInstrument(instruments: Instrument[]): Instrument | undefined {
+  if (instruments.length === 0) return undefined;
+  const preferred = instruments.find((i) =>
+    i.name.toUpperCase().includes(PREFERRED_INSTRUMENT_SYMBOL),
+  );
+  return preferred ?? instruments[0];
+}
 
 export function instrumentsQueryKey(accountId: string, accNum: string) {
   return ["instruments", accountId, accNum] as const;

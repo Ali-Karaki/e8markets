@@ -7,6 +7,9 @@ const apiPaths = {
   accounts: "/api/accounts",
   accountState: "/api/accounts/state",
   instruments: "/api/instruments",
+  positions: "/api/positions",
+  positionsSync: "/api/positions/sync",
+  positionsHistory: "/api/positions/history",
 } as const;
 
 type ApiPath = (typeof apiPaths)[keyof typeof apiPaths];
@@ -64,6 +67,40 @@ export type InstrumentsResponse = {
   instruments: Instrument[];
 };
 
+export type Position = {
+  id: string;
+  tradableInstrumentId?: number;
+  side?: string;
+  qty?: number;
+  avgPrice?: number;
+  routeId?: number;
+  stopLossId?: number;
+  takeProfitId?: number;
+  fields?: Record<string, string>;
+};
+
+export type PositionsResponse = {
+  positions: Position[];
+};
+
+export type SyncPositionsResponse = {
+  syncRunId: number;
+  status: string;
+  recordsStored: number;
+};
+
+export type PositionSnapshot = {
+  id: number;
+  syncRunId: number;
+  syncedAt: string;
+  positionId: string;
+  position: Position;
+};
+
+export type PositionHistoryResponse = {
+  snapshots: PositionSnapshot[];
+};
+
 type ApiErrorBody = {
   error: string;
 };
@@ -85,6 +122,17 @@ export type Api = {
   accounts(): Promise<AccountsResponse>;
   accountState(accountId: string, accNum: string): Promise<AccountState>;
   instruments(accountId: string, accNum: string): Promise<InstrumentsResponse>;
+  positions(
+    accountId: string,
+    accNum: string,
+    tradableInstrumentId?: number,
+  ): Promise<PositionsResponse>;
+  syncPositions(accountId: string, accNum: string): Promise<SyncPositionsResponse>;
+  positionHistory(
+    accountId: string,
+    accNum: string,
+    tradableInstrumentId?: number,
+  ): Promise<PositionHistoryResponse>;
 };
 
 function isApiErrorBody(data: unknown): data is ApiErrorBody {
@@ -150,5 +198,28 @@ export const api: Api = {
   instruments(accountId, accNum) {
     const params = new URLSearchParams({ accountId, accNum });
     return request<InstrumentsResponse>(`${apiPaths.instruments}?${params}`);
+  },
+
+  positions(accountId, accNum, tradableInstrumentId) {
+    const params = new URLSearchParams({ accountId, accNum });
+    if (tradableInstrumentId !== undefined) {
+      params.set("tradableInstrumentId", String(tradableInstrumentId));
+    }
+    return request<PositionsResponse>(`${apiPaths.positions}?${params}`);
+  },
+
+  syncPositions(accountId, accNum) {
+    const params = new URLSearchParams({ accountId, accNum });
+    return request<SyncPositionsResponse>(`${apiPaths.positionsSync}?${params}`, {
+      method: "POST",
+    });
+  },
+
+  positionHistory(accountId, accNum, tradableInstrumentId) {
+    const params = new URLSearchParams({ accountId, accNum });
+    if (tradableInstrumentId !== undefined) {
+      params.set("tradableInstrumentId", String(tradableInstrumentId));
+    }
+    return request<PositionHistoryResponse>(`${apiPaths.positionsHistory}?${params}`);
   },
 };
