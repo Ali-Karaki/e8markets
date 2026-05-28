@@ -56,3 +56,4 @@ Browser (React)  →  Go API  →  TradeLocker API
 - **UI** — functional, not polished.
 - **Snapshot fields** — PnL / current price only when TradeLocker returns them in the positions payload.
 - **No shared BE/FE types** — request/response shapes are defined separately in Go and TypeScript; an OpenAPI spec with type generation (e.g. for the client) was not added.
+- **Account choosing** — not fully tested; E8 / TradeLocker test restrictions allow only one account, so multi-account selection could not be verified end-to-end.
