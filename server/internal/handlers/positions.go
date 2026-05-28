@@ -27,19 +27,19 @@ type positionsListResponse struct {
 }
 
 type syncPositionsResponse struct {
-	SyncRunID     int64                           `json:"syncRunId"`
-	Status        string                          `json:"status"`
-	RecordsStored int                             `json:"recordsStored"`
-	Skipped       bool                            `json:"skipped,omitempty"`
-	Positions     []tradelocker.PositionSummary   `json:"positions"`
+	SyncRunID     int64                         `json:"syncRunId"`
+	Status        string                        `json:"status"`
+	RecordsStored int                           `json:"recordsStored"`
+	Skipped       bool                          `json:"skipped,omitempty"`
+	Positions     []tradelocker.PositionSummary `json:"positions"`
 }
 
 type positionHistoryItem struct {
-	ID         int64                         `json:"id"`
-	SyncRunID  int64                         `json:"syncRunId"`
-	SyncedAt   string                        `json:"syncedAt"`
-	PositionID string                        `json:"positionId"`
-	Position   tradelocker.PositionSummary   `json:"position"`
+	ID         int64                       `json:"id"`
+	SyncRunID  int64                       `json:"syncRunId"`
+	SyncedAt   string                      `json:"syncedAt"`
+	PositionID string                      `json:"positionId"`
+	Position   tradelocker.PositionSummary `json:"position"`
 }
 
 type positionHistoryResponse struct {

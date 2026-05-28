@@ -21,13 +21,13 @@ type Logger interface {
 }
 
 type Client struct {
-	baseURL    string
-	httpClient *http.Client
-	logger     Logger
-	configOnce        sync.Once
-	configErr         error
-	columns           []Column
-	positionColumns   []Column
+	baseURL         string
+	httpClient      *http.Client
+	logger          Logger
+	configOnce      sync.Once
+	configErr       error
+	columns         []Column
+	positionColumns []Column
 }
 
 func NewClient(baseURL string, logger Logger) *Client {

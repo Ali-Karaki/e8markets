@@ -9,12 +9,12 @@ import (
 )
 
 type Deps struct {
-	Cfg          config.Config
-	Auth         *handlers.AuthHandler
-	Accounts     *handlers.AccountsHandler
-	Instruments  *handlers.InstrumentsHandler
-	Positions    *handlers.PositionsHandler
-	AuthMW       *middleware.Auth
+	Cfg         config.Config
+	Auth        *handlers.AuthHandler
+	Accounts    *handlers.AccountsHandler
+	Instruments *handlers.InstrumentsHandler
+	Positions   *handlers.PositionsHandler
+	AuthMW      *middleware.Auth
 }
 
 func NewHandler(deps Deps) http.Handler {
