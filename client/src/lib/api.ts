@@ -83,10 +83,17 @@ export type PositionsResponse = {
   positions: Position[];
 };
 
+export type SyncPositionsOptions = {
+  force?: boolean;
+  onlyIfNew?: boolean;
+};
+
 export type SyncPositionsResponse = {
   syncRunId: number;
   status: string;
   recordsStored: number;
+  skipped?: boolean;
+  positions: Position[];
 };
 
 export type PositionSnapshot = {
@@ -127,7 +134,11 @@ export type Api = {
     accNum: string,
     tradableInstrumentId?: number,
   ): Promise<PositionsResponse>;
-  syncPositions(accountId: string, accNum: string): Promise<SyncPositionsResponse>;
+  syncPositions(
+    accountId: string,
+    accNum: string,
+    options?: SyncPositionsOptions,
+  ): Promise<SyncPositionsResponse>;
   positionHistory(
     accountId: string,
     accNum: string,
@@ -208,8 +219,10 @@ export const api: Api = {
     return request<PositionsResponse>(`${apiPaths.positions}?${params}`);
   },
 
-  syncPositions(accountId, accNum) {
+  syncPositions(accountId, accNum, options) {
     const params = new URLSearchParams({ accountId, accNum });
+    if (options?.force) params.set("force", "true");
+    if (options?.onlyIfNew) params.set("onlyIfNew", "true");
     return request<SyncPositionsResponse>(`${apiPaths.positionsSync}?${params}`, {
       method: "POST",
     });

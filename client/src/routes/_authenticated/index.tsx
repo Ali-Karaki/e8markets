@@ -12,6 +12,8 @@ import { useLogout, useSession } from "@/lib/auth";
 import { findPreferredInstrument, useInstruments } from "@/lib/instruments";
 import {
   filterPositionsByInstrument,
+  formatSyncMessage,
+  useAutoPositionSync,
   usePositionHistory,
   usePositions,
   useSyncPositions,
@@ -77,7 +79,16 @@ function DashboardPage() {
     selectedAccount?.accNum,
     instrumentFilter,
   );
-  const syncPositions = useSyncPositions();
+  const syncPositions = useSyncPositions((data) =>
+    setLastSyncMessage(formatSyncMessage(data, true)),
+  );
+
+  useAutoPositionSync(
+    selectedAccount?.id,
+    selectedAccount?.accNum,
+    Boolean(selectedAccount),
+    setLastSyncMessage,
+  );
 
   useEffect(() => {
     if (instrumentList.length > 0 && selectedInstrumentId === null) {
@@ -96,13 +107,11 @@ function DashboardPage() {
     if (!selectedAccount) return;
 
     try {
-      const result = await syncPositions.mutateAsync({
+      await syncPositions.mutateAsync({
         accountId: selectedAccount.id,
         accNum: selectedAccount.accNum,
+        options: { force: true },
       });
-      setLastSyncMessage(
-        `Saved ${result.recordsStored} snapshot${result.recordsStored === 1 ? "" : "s"} to the database (sync run #${result.syncRunId}).`,
-      );
     } catch {
       setLastSyncMessage(undefined);
     }

@@ -49,8 +49,9 @@ export function PositionsCard({
         <div className="space-y-1.5">
           <CardTitle>Current positions</CardTitle>
           <CardDescription>
-            Live open positions from TradeLocker. Sync saves a snapshot of these to the database
-            (shown below)—it does not close trades.
+            Live open positions from TradeLocker. Sync saves a snapshot to the database (shown
+            below)—it does not close trades. Auto-sync runs every 3 minutes when a new open position
+            appears (tab visible).
           </CardDescription>
         </div>
         <Button type="button" size="sm" onClick={onSync} disabled={isSyncing}>
