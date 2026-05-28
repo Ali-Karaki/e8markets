@@ -1,6 +1,6 @@
 # e8markets
 
-Small full-stack app integrating with the [TradeLocker Public API](https://public-api.tradelocker.com/docs/getting-started) for the [E8 Markets developer test](docs/assignment.pdf). React frontend, Go REST API, Postgres, Redis. The frontend never calls TradeLocker directly; there is no premade TradeLocker SDK.
+Small full-stack app integrating with the [TradeLocker Public API](https://public-api.tradelocker.com/docs/getting-started). React frontend, Go REST API, Postgres, Redis. The frontend never calls TradeLocker directly; there is no premade TradeLocker SDK.
 
 Further detail: [docs/docs.md](docs/docs.md).
 
