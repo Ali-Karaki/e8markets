@@ -11,6 +11,10 @@ const (
 	EventTradeLockerRequest = "tradelocker_request"
 )
 
+type APILogger interface {
+	Log(ctx context.Context, sessionID *uuid.UUID, eventType, method, path string, statusCode int, message string)
+}
+
 type APILogStore struct {
 	pg *Postgres
 }

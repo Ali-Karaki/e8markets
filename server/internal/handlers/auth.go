@@ -19,11 +19,11 @@ type AuthHandler struct {
 	cfg         config.Config
 	sessions    *store.SessionStore
 	tradelocker *tradelocker.Client
-	logs        *store.APILogStore
+	logs        store.APILogger
 	auth        *middleware.Auth
 }
 
-func NewAuthHandler(cfg config.Config, sessions *store.SessionStore, tl *tradelocker.Client, logs *store.APILogStore, auth *middleware.Auth) *AuthHandler {
+func NewAuthHandler(cfg config.Config, sessions *store.SessionStore, tl *tradelocker.Client, logs store.APILogger, auth *middleware.Auth) *AuthHandler {
 	return &AuthHandler{
 		cfg:         cfg,
 		sessions:    sessions,

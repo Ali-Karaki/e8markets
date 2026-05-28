@@ -57,6 +57,34 @@ func TestDoJSON_classifiesUpstreamErrors(t *testing.T) {
 	}
 }
 
+func TestDoJSON_logsUpstreamErrorOn4xx(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":"bad request"}`))
+	}))
+	defer server.Close()
+
+	logger := &mockLogger{}
+	client := NewClient(server.URL, logger)
+
+	_, err := client.doJSON(context.Background(), nil, http.MethodGet, "/test", "", nil, "", nil)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+
+	if len(logger.calls) != 1 {
+		t.Fatalf("log calls = %d", len(logger.calls))
+	}
+
+	call := logger.calls[0]
+	if call.statusCode != http.StatusBadRequest {
+		t.Fatalf("status = %d", call.statusCode)
+	}
+	if call.message != `{"error":"bad request"}` {
+		t.Fatalf("message = %q", call.message)
+	}
+}
+
 func TestDoJSON_classifiesMalformedResponse(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
