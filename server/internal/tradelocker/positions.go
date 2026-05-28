@@ -111,6 +111,20 @@ func parseInt64(s string) int64 {
 	return v
 }
 
+// HasNewOpenPositions reports whether any open position ID is not in previousSyncedIDs.
+// An empty previous map means never synced: any current open position counts as new.
+func HasNewOpenPositions(current []PositionSummary, previousSyncedIDs map[string]struct{}) bool {
+	for _, p := range current {
+		if p.ID == "" {
+			continue
+		}
+		if _, seen := previousSyncedIDs[p.ID]; !seen {
+			return true
+		}
+	}
+	return false
+}
+
 func FilterPositionsByInstrument(positions []PositionSummary, tradableInstrumentID int64) []PositionSummary {
 	if tradableInstrumentID == 0 {
 		return positions

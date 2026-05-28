@@ -226,6 +226,23 @@ func TestMapPositions_liveRow(t *testing.T) {
 	}
 }
 
+func TestHasNewOpenPositions(t *testing.T) {
+	previous := map[string]struct{}{"a": {}}
+	current := []PositionSummary{{ID: "a"}, {ID: "b"}}
+	if !HasNewOpenPositions(current, previous) {
+		t.Fatal("expected new position b")
+	}
+	if HasNewOpenPositions([]PositionSummary{{ID: "a"}}, previous) {
+		t.Fatal("expected no new positions")
+	}
+	if !HasNewOpenPositions([]PositionSummary{{ID: "x"}}, map[string]struct{}{}) {
+		t.Fatal("expected new on first sync with open position")
+	}
+	if HasNewOpenPositions(nil, map[string]struct{}{}) {
+		t.Fatal("expected no new when no open positions")
+	}
+}
+
 func TestFilterPositionsByInstrument(t *testing.T) {
 	positions := []PositionSummary{
 		{ID: "1", TradableInstrumentID: 100},

@@ -27,9 +27,11 @@ type positionsListResponse struct {
 }
 
 type syncPositionsResponse struct {
-	SyncRunID      int64  `json:"syncRunId"`
-	Status         string `json:"status"`
-	RecordsStored  int    `json:"recordsStored"`
+	SyncRunID     int64                           `json:"syncRunId"`
+	Status        string                          `json:"status"`
+	RecordsStored int                             `json:"recordsStored"`
+	Skipped       bool                            `json:"skipped,omitempty"`
+	Positions     []tradelocker.PositionSummary   `json:"positions"`
 }
 
 type positionHistoryItem struct {
@@ -92,6 +94,25 @@ func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	force, onlyIfNew := parseSyncOptions(r)
+	if onlyIfNew && !force {
+		previous, err := h.store.GetOpenPositionIDsFromLatestSync(r.Context(), accountID, accNum)
+		if err != nil {
+			log.Printf("GetOpenPositionIDsFromLatestSync failed accountId=%s accNum=%s err=%v", accountID, accNum, err)
+			httpx.Error(w, http.StatusInternalServerError, "Failed to check position sync state")
+			return
+		}
+		if !tradelocker.HasNewOpenPositions(positions, previous) {
+			httpx.JSON(w, http.StatusOK, syncPositionsResponse{
+				Status:        store.SyncStatusSkipped,
+				RecordsStored: 0,
+				Skipped:       true,
+				Positions:     positions,
+			})
+			return
+		}
+	}
+
 	inputs := make([]store.SnapshotInput, 0, len(positions))
 	for _, pos := range positions {
 		data, err := json.Marshal(pos)
@@ -126,7 +147,12 @@ func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 		SyncRunID:     syncRunID,
 		Status:        store.SyncStatusSuccess,
 		RecordsStored: recordsStored,
+		Positions:     positions,
 	})
+}
+
+func parseSyncOptions(r *http.Request) (force, onlyIfNew bool) {
+	return r.URL.Query().Get("force") == "true", r.URL.Query().Get("onlyIfNew") == "true"
 }
 
 func (h *PositionsHandler) History(w http.ResponseWriter, r *http.Request) {

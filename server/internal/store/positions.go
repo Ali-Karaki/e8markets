@@ -13,6 +13,7 @@ import (
 const (
 	SyncStatusSuccess = "success"
 	SyncStatusFailure = "failure"
+	SyncStatusSkipped = "skipped"
 	SyncTypePositions = "positions"
 
 	defaultHistoryLimit = 100
@@ -86,6 +87,39 @@ func (s *PositionStore) SyncPositions(
 	}
 
 	return syncRunID, recordsStored, nil
+}
+
+func (s *PositionStore) GetOpenPositionIDsFromLatestSync(
+	ctx context.Context,
+	accountID, accNum string,
+) (map[string]struct{}, error) {
+	rows, err := s.pg.pool.Query(ctx, `
+		SELECT ps.position_id
+		FROM position_snapshots ps
+		WHERE ps.sync_run_id = (
+			SELECT id FROM sync_runs
+			WHERE account_id = $1 AND acc_num = $2 AND status = $3
+			ORDER BY created_at DESC
+			LIMIT 1
+		)
+	`, accountID, accNum, SyncStatusSuccess)
+	if err != nil {
+		return nil, fmt.Errorf("query latest sync position ids: %w", err)
+	}
+	defer rows.Close()
+
+	ids := make(map[string]struct{})
+	for rows.Next() {
+		var positionID string
+		if err := rows.Scan(&positionID); err != nil {
+			return nil, fmt.Errorf("scan position_id: %w", err)
+		}
+		ids[positionID] = struct{}{}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate position ids: %w", err)
+	}
+	return ids, nil
 }
 
 func (s *PositionStore) RecordFailedSync(
