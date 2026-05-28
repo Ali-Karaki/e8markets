@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Ali-Karaki/e8markets/server/internal/apperr"
 	"github.com/Ali-Karaki/e8markets/server/internal/config"
 	"github.com/Ali-Karaki/e8markets/server/internal/httpx"
 	"github.com/Ali-Karaki/e8markets/server/internal/store"
@@ -71,19 +72,19 @@ func (a *Auth) Optional(r *http.Request) (store.Session, bool) {
 func (a *Auth) loadSession(w http.ResponseWriter, r *http.Request) (store.Session, bool) {
 	cookie, err := r.Cookie(a.cfg.SessionCookieName)
 	if err != nil {
-		httpx.Error(w, http.StatusUnauthorized, "Not authenticated")
+		httpx.WriteAppError(w, apperr.NotAuthenticated())
 		return store.Session{}, false
 	}
 
 	id, err := uuid.Parse(cookie.Value)
 	if err != nil {
-		httpx.Error(w, http.StatusUnauthorized, "Invalid session")
+		httpx.WriteAppError(w, apperr.InvalidSession())
 		return store.Session{}, false
 	}
 
 	session, err := a.sessions.Get(r.Context(), id)
 	if err != nil {
-		httpx.Error(w, http.StatusUnauthorized, "Session expired")
+		httpx.WriteAppError(w, apperr.SessionExpired())
 		return store.Session{}, false
 	}
 
@@ -91,7 +92,7 @@ func (a *Auth) loadSession(w http.ResponseWriter, r *http.Request) (store.Sessio
 	if err != nil {
 		_ = a.sessions.Delete(r.Context(), session.ID)
 		clearSessionCookie(w, a.cfg)
-		httpx.Error(w, http.StatusUnauthorized, "Session expired")
+		httpx.WriteAppError(w, apperr.SessionExpired())
 		return store.Session{}, false
 	}
 

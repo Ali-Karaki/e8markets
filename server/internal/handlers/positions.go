@@ -49,7 +49,6 @@ type positionHistoryResponse struct {
 func (h *PositionsHandler) List(w http.ResponseWriter, r *http.Request) {
 	session, ok := middleware.SessionFromContext(r.Context())
 	if !ok {
-		httpx.Error(w, http.StatusUnauthorized, "Not authenticated")
 		return
 	}
 
@@ -62,7 +61,7 @@ func (h *PositionsHandler) List(w http.ResponseWriter, r *http.Request) {
 	positions, err := h.tl.GetPositions(r.Context(), &sid, session.AccessToken, accountID, accNum)
 	if err != nil {
 		log.Printf("GetPositions failed session=%s accountId=%s accNum=%s err=%v", sid, accountID, accNum, err)
-		httpx.Error(w, http.StatusBadGateway, "Failed to fetch positions")
+		writeTradeLockerError(w, err)
 		return
 	}
 
@@ -76,7 +75,6 @@ func (h *PositionsHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 	session, ok := middleware.SessionFromContext(r.Context())
 	if !ok {
-		httpx.Error(w, http.StatusUnauthorized, "Not authenticated")
 		return
 	}
 
@@ -90,7 +88,7 @@ func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Sync GetPositions failed session=%s accountId=%s accNum=%s err=%v", sid, accountID, accNum, err)
 		_, _ = h.store.RecordFailedSync(r.Context(), session.ID, accountID, accNum, "Failed to fetch positions from TradeLocker")
-		httpx.Error(w, http.StatusBadGateway, "Failed to fetch positions")
+		writeTradeLockerError(w, err)
 		return
 	}
 
@@ -99,7 +97,7 @@ func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 		previous, err := h.store.GetOpenPositionIDsFromLatestSync(r.Context(), accountID, accNum)
 		if err != nil {
 			log.Printf("GetOpenPositionIDsFromLatestSync failed accountId=%s accNum=%s err=%v", accountID, accNum, err)
-			httpx.Error(w, http.StatusInternalServerError, "Failed to check position sync state")
+			writeInternalError(w, "Failed to check position sync state")
 			return
 		}
 		if !tradelocker.HasNewOpenPositions(positions, previous) {
@@ -118,7 +116,7 @@ func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 		data, err := json.Marshal(pos)
 		if err != nil {
 			log.Printf("marshal position session=%s err=%v", sid, err)
-			httpx.Error(w, http.StatusInternalServerError, "Failed to store positions")
+			writeInternalError(w, "Failed to store positions")
 			return
 		}
 
@@ -139,7 +137,7 @@ func (h *PositionsHandler) Sync(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("SyncPositions failed session=%s accountId=%s err=%v", sid, accountID, err)
 		_, _ = h.store.RecordFailedSync(r.Context(), session.ID, accountID, accNum, "Failed to store position snapshots")
-		httpx.Error(w, http.StatusInternalServerError, "Failed to store positions")
+		writeInternalError(w, "Failed to store positions")
 		return
 	}
 
@@ -158,7 +156,6 @@ func parseSyncOptions(r *http.Request) (force, onlyIfNew bool) {
 func (h *PositionsHandler) History(w http.ResponseWriter, r *http.Request) {
 	_, ok := middleware.SessionFromContext(r.Context())
 	if !ok {
-		httpx.Error(w, http.StatusUnauthorized, "Not authenticated")
 		return
 	}
 
@@ -170,7 +167,7 @@ func (h *PositionsHandler) History(w http.ResponseWriter, r *http.Request) {
 	snapshots, err := h.store.ListSnapshots(r.Context(), accountID, accNum, instrumentID, 0)
 	if err != nil {
 		log.Printf("ListSnapshots failed accountId=%s accNum=%s err=%v", accountID, accNum, err)
-		httpx.Error(w, http.StatusInternalServerError, "Failed to fetch position history")
+		writeInternalError(w, "Failed to fetch position history")
 		return
 	}
 
@@ -197,14 +194,14 @@ func parseAccountQuery(w http.ResponseWriter, r *http.Request) (accountID, accNu
 	accountID = r.URL.Query().Get("accountId")
 	accNum = r.URL.Query().Get("accNum")
 	if accountID == "" || accNum == "" {
-		httpx.Error(w, http.StatusBadRequest, "accountId and accNum are required")
+		writeValidationError(w, "accountId and accNum are required")
 		return "", "", nil, false
 	}
 
 	if raw := r.URL.Query().Get("tradableInstrumentId"); raw != "" {
 		id, err := strconv.ParseInt(raw, 10, 64)
 		if err != nil {
-			httpx.Error(w, http.StatusBadRequest, "tradableInstrumentId must be a number")
+			writeValidationError(w, "tradableInstrumentId must be a number")
 			return "", "", nil, false
 		}
 		instrumentID = &id

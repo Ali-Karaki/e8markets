@@ -58,6 +58,13 @@ func (c *Client) logRequest(ctx context.Context, sessionID *string, method, path
 	c.logger.Log(ctx, parseSessionID(sessionID), eventTradeLockerRequest, method, path, statusCode, message)
 }
 
+func truncateLogMessage(msg string) string {
+	if len(msg) > 500 {
+		return msg[:500]
+	}
+	return msg
+}
+
 func (c *Client) doJSON(ctx context.Context, sessionID *string, method, path, accNum string, body interface{}, bearerToken string, out interface{}) (int, error) {
 	var bodyReader io.Reader
 	if body != nil {
@@ -85,33 +92,31 @@ func (c *Client) doJSON(ctx context.Context, sessionID *string, method, path, ac
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		c.logRequest(ctx, sessionID, method, path, 0, err.Error())
-		return 0, fmt.Errorf("request failed: %w", err)
+		return 0, upstreamUnavailable("request failed: " + err.Error())
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return resp.StatusCode, fmt.Errorf("read response: %w", err)
+		c.logRequest(ctx, sessionID, method, path, resp.StatusCode, err.Error())
+		return resp.StatusCode, upstreamUnavailable("read response: " + err.Error())
 	}
 
 	msg := ""
 	if resp.StatusCode >= 400 {
-		msg = string(respBody)
-		if len(msg) > 500 {
-			msg = msg[:500]
-		}
+		msg = truncateLogMessage(string(respBody))
 		c.logRequest(ctx, sessionID, method, path, resp.StatusCode, msg)
-		return resp.StatusCode, fmt.Errorf("tradelocker error %d: %s", resp.StatusCode, string(respBody))
+		if resp.StatusCode == http.StatusTooManyRequests {
+			return resp.StatusCode, upstreamRateLimited(resp.StatusCode)
+		}
+		return resp.StatusCode, upstreamError(resp.StatusCode)
 	}
 
 	if out != nil && len(respBody) > 0 {
 		if err := json.Unmarshal(respBody, out); err != nil {
-			decodeMsg := "decode: " + err.Error()
-			if len(decodeMsg) > 500 {
-				decodeMsg = decodeMsg[:500]
-			}
+			decodeMsg := truncateLogMessage("decode: " + err.Error())
 			c.logRequest(ctx, sessionID, method, path, resp.StatusCode, decodeMsg)
-			return resp.StatusCode, fmt.Errorf("decode response: %w", err)
+			return resp.StatusCode, upstreamMalformed(decodeMsg)
 		}
 	}
 

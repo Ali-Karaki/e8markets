@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Ali-Karaki/e8markets/server/internal/apperr"
 	"github.com/Ali-Karaki/e8markets/server/internal/config"
 	"github.com/Ali-Karaki/e8markets/server/internal/httpx"
 	"github.com/Ali-Karaki/e8markets/server/internal/middleware"
@@ -48,7 +49,7 @@ type sessionResponse struct {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req loginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid request body")
+		writeValidationError(w, "Invalid request body")
 		return
 	}
 
@@ -59,14 +60,14 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Email == "" || req.Password == "" {
-		httpx.Error(w, http.StatusBadRequest, "Email and password are required")
+		writeValidationError(w, "Email and password are required")
 		return
 	}
 
 	tokens, err := h.tradelocker.Login(r.Context(), nil, req.Email, req.Password, req.Server)
 	if err != nil {
 		h.logs.Log(r.Context(), nil, store.EventLoginAttempt, "POST", "/api/auth/login", http.StatusUnauthorized, err.Error())
-		httpx.Error(w, http.StatusUnauthorized, "Invalid credentials")
+		writeAppError(w, apperr.InvalidCredentials())
 		return
 	}
 
@@ -80,7 +81,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	session, err = h.sessions.Create(r.Context(), session)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Failed to create session")
+		writeInternalError(w, "Failed to create session")
 		return
 	}
 
@@ -98,7 +99,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 	session, ok := h.auth.Optional(r)
 	if !ok {
-		httpx.Error(w, http.StatusUnauthorized, "Not authenticated")
+		writeAppError(w, apperr.NotAuthenticated())
 		return
 	}
 

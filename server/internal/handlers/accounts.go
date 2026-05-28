@@ -30,7 +30,6 @@ func NewAccountsHandler(tl *tradelocker.Client) *AccountsHandler {
 func (h *AccountsHandler) List(w http.ResponseWriter, r *http.Request) {
 	session, ok := middleware.SessionFromContext(r.Context())
 	if !ok {
-		httpx.Error(w, http.StatusUnauthorized, "Not authenticated")
 		return
 	}
 
@@ -38,7 +37,7 @@ func (h *AccountsHandler) List(w http.ResponseWriter, r *http.Request) {
 	accounts, err := h.tl.GetAllAccounts(r.Context(), &sid, session.AccessToken)
 	if err != nil {
 		log.Printf("GetAllAccounts failed session=%s err=%v", sid, err)
-		httpx.Error(w, http.StatusBadGateway, "Failed to fetch accounts")
+		writeTradeLockerError(w, err)
 		return
 	}
 
@@ -54,14 +53,13 @@ func (h *AccountsHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *AccountsHandler) State(w http.ResponseWriter, r *http.Request) {
 	session, ok := middleware.SessionFromContext(r.Context())
 	if !ok {
-		httpx.Error(w, http.StatusUnauthorized, "Not authenticated")
 		return
 	}
 
 	accountID := r.URL.Query().Get("accountId")
 	accNum := r.URL.Query().Get("accNum")
 	if accountID == "" || accNum == "" {
-		httpx.Error(w, http.StatusBadRequest, "accountId and accNum are required")
+		writeValidationError(w, "accountId and accNum are required")
 		return
 	}
 
@@ -69,7 +67,7 @@ func (h *AccountsHandler) State(w http.ResponseWriter, r *http.Request) {
 	state, err := h.tl.GetAccountState(r.Context(), &sid, session.AccessToken, accountID, accNum)
 	if err != nil {
 		log.Printf("GetAccountState failed session=%s accountId=%s accNum=%s err=%v", sid, accountID, accNum, err)
-		httpx.Error(w, http.StatusBadGateway, "Failed to fetch account state")
+		writeTradeLockerError(w, err)
 		return
 	}
 
