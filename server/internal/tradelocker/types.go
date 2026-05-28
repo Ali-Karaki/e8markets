@@ -105,6 +105,27 @@ type AccountStateData struct {
 // OpenAPI: https://public-api.tradelocker.com/reference/getconfigusingget.md
 type ConfigData struct {
 	AccountDetailsConfig *ColumnConfig `json:"accountDetailsConfig"`
+	PositionsConfig      *ColumnConfig `json:"positionsConfig"`
+}
+
+// PositionsData is the "d" payload for GET /trade/accounts/{accountId}/positions.
+// Live API uses "positions"; some docs show "positionsData".
+// OpenAPI: https://public-api.tradelocker.com/reference/getpositions.md
+type PositionsData struct {
+	Positions [][]json.RawMessage `json:"positions"`
+}
+
+// PositionSummary is a frontend-friendly position shape returned by our API.
+type PositionSummary struct {
+	ID                   string            `json:"id"`
+	TradableInstrumentID int64             `json:"tradableInstrumentId,omitempty"`
+	Side                 string            `json:"side,omitempty"`
+	Qty                  float64           `json:"qty,omitempty"`
+	AvgPrice             float64           `json:"avgPrice,omitempty"`
+	RouteID              int64             `json:"routeId,omitempty"`
+	StopLossID           int64             `json:"stopLossId,omitempty"`
+	TakeProfitID         int64             `json:"takeProfitId,omitempty"`
+	Fields               map[string]string `json:"fields,omitempty"`
 }
 
 // ColumnConfig maps accountDetailsData array indices to column id values (PanelConfig in OpenAPI).

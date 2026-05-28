@@ -45,6 +45,9 @@ func (c *Client) loadConfig(ctx context.Context, sessionID *string, accessToken,
 		if resp.D.AccountDetailsConfig != nil {
 			c.columns = resp.D.AccountDetailsConfig.Columns
 		}
+		if resp.D.PositionsConfig != nil {
+			c.positionColumns = resp.D.PositionsConfig.Columns
+		}
 	})
 	return c.configErr
 }

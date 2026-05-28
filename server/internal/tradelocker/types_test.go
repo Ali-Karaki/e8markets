@@ -129,6 +129,114 @@ func TestExtractRouteIDs(t *testing.T) {
 	}
 }
 
+func TestConfigData_positionsConfig(t *testing.T) {
+	const raw = `{"s":"ok","d":{"positionsConfig":{"id":"positions","title":"Positions","columns":[{"id":"id"},{"id":"tradableInstrumentId"},{"id":"side"},{"id":"qty"},{"id":"avgPrice"}]}}}`
+
+	var resp TLResponse[ConfigData]
+	if err := json.Unmarshal([]byte(raw), &resp); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	cfg := resp.D.PositionsConfig
+	if cfg == nil || cfg.ID != "positions" || len(cfg.Columns) != 5 {
+		t.Fatalf("config = %+v", cfg)
+	}
+}
+
+func TestPositionsData_liveAPI(t *testing.T) {
+	const raw = `{"s":"ok","d":{"positions":[["360287970189927922","6109","948735","buy","0.01","1.85784",null,null,"1779927208000","-0.10",null]]}}`
+
+	var resp TLResponse[PositionsData]
+	if err := json.Unmarshal([]byte(raw), &resp); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if len(resp.D.Positions) != 1 || len(resp.D.Positions[0]) != 11 {
+		t.Fatalf("positions = %+v", resp.D.Positions)
+	}
+}
+
+func TestMapPositions(t *testing.T) {
+	columns := []Column{
+		{ID: "id"},
+		{ID: "tradableInstrumentId"},
+		{ID: "routeId"},
+		{ID: "side"},
+		{ID: "qty"},
+		{ID: "avgPrice"},
+	}
+	row := []json.RawMessage{
+		[]byte(`1001`),
+		[]byte(`2001`),
+		[]byte(`42`),
+		[]byte(`"buy"`),
+		[]byte(`"1.5"`),
+		[]byte(`1.08432`),
+	}
+
+	positions := mapPositions(columns, [][]json.RawMessage{row})
+	if len(positions) != 1 {
+		t.Fatalf("len = %d", len(positions))
+	}
+	p := positions[0]
+	if p.ID != "1001" || p.TradableInstrumentID != 2001 || p.Side != "buy" || p.Qty != 1.5 {
+		t.Fatalf("position = %+v", p)
+	}
+	if p.AvgPrice != 1.08432 {
+		t.Fatalf("avgPrice = %v", p.AvgPrice)
+	}
+}
+
+func TestMapPositions_liveRow(t *testing.T) {
+	columns := []Column{
+		{ID: "id"},
+		{ID: "tradableInstrumentId"},
+		{ID: "routeId"},
+		{ID: "side"},
+		{ID: "qty"},
+		{ID: "avgPrice"},
+		{ID: "stopLossId"},
+		{ID: "takeProfitId"},
+		{ID: "openDate"},
+		{ID: "unrealizedPl"},
+		{ID: "strategyId"},
+	}
+	row := []json.RawMessage{
+		[]byte(`"360287970189927922"`),
+		[]byte(`"6109"`),
+		[]byte(`"948735"`),
+		[]byte(`"buy"`),
+		[]byte(`"0.01"`),
+		[]byte(`"1.85784"`),
+		[]byte(`null`),
+		[]byte(`null`),
+		[]byte(`"1779927208000"`),
+		[]byte(`"-0.10"`),
+		[]byte(`null`),
+	}
+
+	positions := mapPositions(columns, [][]json.RawMessage{row})
+	if len(positions) != 1 {
+		t.Fatalf("len = %d", len(positions))
+	}
+	p := positions[0]
+	if p.ID != "360287970189927922" || p.TradableInstrumentID != 6109 || p.Side != "buy" {
+		t.Fatalf("position = %+v", p)
+	}
+	if p.Fields["unrealizedPl"] != "-0.10" {
+		t.Fatalf("unrealizedPl = %v", p.Fields["unrealizedPl"])
+	}
+}
+
+func TestFilterPositionsByInstrument(t *testing.T) {
+	positions := []PositionSummary{
+		{ID: "1", TradableInstrumentID: 100},
+		{ID: "2", TradableInstrumentID: 200},
+	}
+	filtered := FilterPositionsByInstrument(positions, 100)
+	if len(filtered) != 1 || filtered[0].ID != "1" {
+		t.Fatalf("filtered = %+v", filtered)
+	}
+}
+
 func TestMapInstruments(t *testing.T) {
 	instruments := []Instrument{
 		{

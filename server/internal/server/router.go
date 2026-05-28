@@ -13,6 +13,7 @@ type Deps struct {
 	Auth         *handlers.AuthHandler
 	Accounts     *handlers.AccountsHandler
 	Instruments  *handlers.InstrumentsHandler
+	Positions    *handlers.PositionsHandler
 	AuthMW       *middleware.Auth
 }
 
@@ -31,6 +32,9 @@ func NewHandler(deps Deps) http.Handler {
 	mux.Handle("GET /api/accounts", protected(deps.Accounts.List))
 	mux.Handle("GET /api/accounts/state", protected(deps.Accounts.State))
 	mux.Handle("GET /api/instruments", protected(deps.Instruments.List))
+	mux.Handle("GET /api/positions", protected(deps.Positions.List))
+	mux.Handle("POST /api/positions/sync", protected(deps.Positions.Sync))
+	mux.Handle("GET /api/positions/history", protected(deps.Positions.History))
 
 	return middleware.CORS(deps.Cfg, middleware.RequestLogger(mux))
 }

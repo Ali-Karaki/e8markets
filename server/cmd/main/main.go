@@ -46,12 +46,15 @@ func main() {
 	authHandler := handlers.NewAuthHandler(cfg, sessions, tl, apiLogs, authMW)
 	accountsHandler := handlers.NewAccountsHandler(tl)
 	instrumentsHandler := handlers.NewInstrumentsHandler(tl)
+	positionStore := store.NewPositionStore(pg)
+	positionsHandler := handlers.NewPositionsHandler(tl, positionStore)
 
 	handler := server.NewHandler(server.Deps{
 		Cfg:         cfg,
 		Auth:        authHandler,
 		Accounts:    accountsHandler,
 		Instruments: instrumentsHandler,
+		Positions:   positionsHandler,
 		AuthMW:      authMW,
 	})
 

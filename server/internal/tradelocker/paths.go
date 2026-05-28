@@ -7,4 +7,5 @@ const (
 	pathTradeConfig          = "/trade/config"
 	pathTradeAccountStateFmt        = "/trade/accounts/%s/state"
 	pathTradeAccountInstrumentsFmt  = "/trade/accounts/%s/instruments"
+	pathTradeAccountPositionsFmt    = "/trade/accounts/%s/positions"
 )
